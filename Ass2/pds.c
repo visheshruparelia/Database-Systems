@@ -14,7 +14,7 @@ int pds_open( char *repo_name )
 	char repo_file[30];
 
 	// Check if status is already open in repo_handle
-	if( // TO-DO )
+	if( repo_handle.repo_status == PDS_REPO_OPEN ) //TO-DO
 		return PDS_REPO_ALREADY_OPEN;
 
 	strcpy(repo_handle.pds_name,repo_name);
@@ -23,12 +23,12 @@ int pds_open( char *repo_name )
 	strcat(repo_file,".dat");
 
 	// Open the repository file in binary read-write mode
-	repo_handle.pds_data_fp = // TO-DO
+	repo_handle.pds_data_fp = fopen(repo_file,"rb+")// TO-DO
 	if( repo_handle.pds_data_fp == NULL ){
 		perror(repo_file);
 	}
 
-	repo_handle.repo_status = // TO-DO set the status appropriately from pds.h
+	repo_handle.repo_status = PDS_REPO_OPEN// TO-DO set the status appropriately from pds.h
 	return PDS_SUCCESS;
 }
 
@@ -39,9 +39,22 @@ int pds_open( char *repo_name )
 int put_rec_by_key( int key, struct Contact *rec )
 {
 	int offset, status, writesize;
+  offset=0;
+  writesize=sizeof(struct Contact);
+  if( repo_handle.repo_status == PDS_REPO_CLOSED ){
+    status = PDS_REPO_CLOSED;
+    return status;
+  }
 
+  fseek(repohandle.pds_data_fp,offset,SEEK_END);
+  fwrite(rec,writesize,1,repohandle.pds_data_fp);
+  if(ferror(repohandle.pds_data_fp)){
+    clearerr(repohandle.pds_data_fp);
+    status = PDS_ADD_FAILED;
+    return status;
+  }
 	// TO-DO
-
+  status = PDS_SUCCESS;
 	return status;
 }
 
@@ -52,8 +65,27 @@ int put_rec_by_key( int key, struct Contact *rec )
 int get_rec_by_key( int key, struct Contact *rec )
 {
 	int offset, status, readsize;
-
+  readsize = sizeof(struct Contact);
+  struct Contact temp;
 	// TO-DO
+  status = PDS_REC_NOT_FOUND;
+  while(1) {
+      fread(&temp,readsize,1,repo_name.pds_data_fp);
+
+      if( feof(repo_handle.pds_data_fp) ) {
+        break ;
+      }
+
+      if(ferror(repohandle.pds_data_fp)){
+        clearerr(repohandle.pds_data_fp);
+        status = PDS_FILE_ERROR;
+        return status;
+      }
+
+      if(key == temp.contact_id){
+        status = PDS_SUCCESS;
+      }
+    }
 
 	return status;
 }
