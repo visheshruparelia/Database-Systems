@@ -23,12 +23,12 @@ int pds_open( char *repo_name )
 	strcat(repo_file,".dat");
 
 	// Open the repository file in binary read-write mode
-	repo_handle.pds_data_fp = fopen(repo_file,"rb+")// TO-DO
+	repo_handle.pds_data_fp = fopen(repo_file,"ab+");// TO-DO
 	if( repo_handle.pds_data_fp == NULL ){
 		perror(repo_file);
 	}
 
-	repo_handle.repo_status = PDS_REPO_OPEN// TO-DO set the status appropriately from pds.h
+	repo_handle.repo_status = PDS_REPO_OPEN;// TO-DO set the status appropriately from pds.h
 	return PDS_SUCCESS;
 }
 
@@ -38,18 +38,18 @@ int pds_open( char *repo_name )
 
 int put_rec_by_key( int key, struct Contact *rec )
 {
-	int offset, status, writesize;
-  offset=0;
+	int status, writesize;
+  long int offset=0;
   writesize=sizeof(struct Contact);
   if( repo_handle.repo_status == PDS_REPO_CLOSED ){
     status = PDS_REPO_CLOSED;
     return status;
-  }
-
-  fseek(repohandle.pds_data_fp,offset,SEEK_END);
-  fwrite(rec,writesize,1,repohandle.pds_data_fp);
-  if(ferror(repohandle.pds_data_fp)){
-    clearerr(repohandle.pds_data_fp);
+	}
+	struct Contact *temp;
+	temp=malloc(writesize);
+  fwrite(temp,writesize,1,repo_handle.pds_data_fp);
+  if(ferror(repo_handle.pds_data_fp)){
+    clearerr(repo_handle.pds_data_fp);
     status = PDS_ADD_FAILED;
     return status;
   }
@@ -65,26 +65,31 @@ int put_rec_by_key( int key, struct Contact *rec )
 int get_rec_by_key( int key, struct Contact *rec )
 {
 	int offset, status, readsize;
+	offset=0;
   readsize = sizeof(struct Contact);
-  struct Contact temp;
+  struct Contact *temp;
 	// TO-DO
   status = PDS_REC_NOT_FOUND;
+	fseek(repo_handle.pds_data_fp,offset,SEEK_SET);
   while(1) {
-      fread(&temp,readsize,1,repo_name.pds_data_fp);
+		temp=malloc(readsize);
+		fread(temp,readsize,1,repo_handle.pds_data_fp);
 
-      if( feof(repo_handle.pds_data_fp) ) {
-        break ;
-      }
-
-      if(ferror(repohandle.pds_data_fp)){
-        clearerr(repohandle.pds_data_fp);
+      if(ferror(repo_handle.pds_data_fp)){
+        clearerr(repo_handle.pds_data_fp);
         status = PDS_FILE_ERROR;
         return status;
       }
 
-      if(key == temp.contact_id){
+      if(key == temp->contact_id){
+				*rec=*temp;
         status = PDS_SUCCESS;
+				break;
       }
+			if( feof(repo_handle.pds_data_fp) ) {
+				break ;
+			}
+			free(temp);
     }
 
 	return status;

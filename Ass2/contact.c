@@ -46,8 +46,7 @@ int add_contact( struct Contact *c )
 	int status;
 
 	// TO-DO: call put_rec_by_key to store the contact
-	status = put_rec_by_key(c.contact_id,c);
-
+	status = put_rec_by_key(c->contact_id,c);
 	if( status != PDS_SUCCESS ){
 		fprintf(stderr, "Unable to add contact with key %d. Error %d", c->contact_id, status );
 		status=CONTACT_FAILURE;//TO-DO: Return appropriate success/failure status from contact.h
