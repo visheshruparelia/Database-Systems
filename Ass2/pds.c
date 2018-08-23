@@ -47,7 +47,11 @@ int put_rec_by_key( int key, struct Contact *rec )
 	}
 	struct Contact *temp;
 	temp=malloc(writesize);
+	*temp=*rec;
+	fseek(repo_handle.pds_data_fp,offset,SEEK_END);
   fwrite(temp,writesize,1,repo_handle.pds_data_fp);
+	// printf("%d\n", temp->contact_id);
+
   if(ferror(repo_handle.pds_data_fp)){
     clearerr(repo_handle.pds_data_fp);
     status = PDS_ADD_FAILED;
@@ -70,14 +74,16 @@ int get_rec_by_key( int key, struct Contact *rec )
   struct Contact *temp;
 	// TO-DO
   status = PDS_REC_NOT_FOUND;
+	temp=malloc(readsize);
 	fseek(repo_handle.pds_data_fp,offset,SEEK_SET);
   while(1) {
-		temp=malloc(readsize);
-		fread(temp,readsize,1,repo_handle.pds_data_fp);
 
-      if(ferror(repo_handle.pds_data_fp)){
+		// printf("key:%d\n", key );
+			fread(temp,readsize,1,repo_handle.pds_data_fp);
+			if(ferror(repo_handle.pds_data_fp)){
         clearerr(repo_handle.pds_data_fp);
         status = PDS_FILE_ERROR;
+				// printf("%d\n", status );
         return status;
       }
 
@@ -89,9 +95,9 @@ int get_rec_by_key( int key, struct Contact *rec )
 			if( feof(repo_handle.pds_data_fp) ) {
 				break ;
 			}
-			free(temp);
     }
 
+	free(temp);
 	return status;
 }
 
