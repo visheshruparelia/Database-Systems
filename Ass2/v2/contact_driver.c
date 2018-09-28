@@ -22,7 +22,8 @@ int main()
 	strcpy(testContact.phone, "dummy number");
 
 	test_case_id = "01";
-	status = pds_open( repo_name );
+	int size = sizeof(struct Contact);
+	status = pds_open( repo_name, size );
 	if( status == PDS_SUCCESS ){
 		TREPORT(test_case_id,"SUCCESS")
 	}
@@ -68,7 +69,7 @@ int main()
 	}
 
 	test_case_id = "06";
-	status = pds_open( repo_name );
+	status = pds_open( repo_name,size );
 	if( status == PDS_SUCCESS ){
 		TREPORT(test_case_id,"SUCCESS")
 	}

@@ -70,7 +70,7 @@ int put_rec_by_key( int key, void *rec )
 	temp_ndx.offset=ptr;
 
 	fseek(repo_handle.pds_ndx_fp,offset,SEEK_END);
-	fwrite(&temp_ndx,1,repo_handle.pds_ndx_fp);
+	fwrite(&temp_ndx,sizeof(struct PDS_NdxInfo),1,repo_handle.pds_ndx_fp);
 	fflush(repo_handle.pds_ndx_fp);
 
   if(ferror(repo_handle.pds_ndx_fp)){
@@ -113,7 +113,7 @@ int get_rec_by_key( int key, void *rec )
       }
 
       if(key == temp->key){
-				ptr=temp->ptr;
+				ptr=temp->offset;
 
 				break;
       }
@@ -125,7 +125,8 @@ int get_rec_by_key( int key, void *rec )
 	free(temp);
 
 	fseek(repo_handle.pds_data_fp,ptr,SEEK_SET);
-	fread(rec,rec_size,1,repo_handle.pds_data_fp);
+	fread(rec,repo_handle.rec_size,1,repo_handle.pds_data_fp);
+
 	status = PDS_SUCCESS;
 	return status;
 }
@@ -134,6 +135,8 @@ int pds_close()
 {
 	strcpy(repo_handle.pds_name, "");
 	fclose(repo_handle.pds_data_fp);
+	fclose(repo_handle.pds_ndx_fp);
+	repo_handle.rec_size = 0;
 	repo_handle.repo_status = PDS_REPO_CLOSED;
 
 	return PDS_SUCCESS;
